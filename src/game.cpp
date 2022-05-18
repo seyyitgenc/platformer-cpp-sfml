@@ -1,14 +1,32 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+
 void gameBuild()
 {
     float dt;
     sf::Clock clock;
 
-    const float gridSize = 50.f;
-
-    sf::RenderWindow window(sf::VideoMode(1024, 768), "Hu-hunt");
+    const float gridSize = 64.f;
+    const unsigned int WIDTH = 1024;
+    const unsigned int HEIGHT = 768;
+    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Hu-hunt");
     window.setFramerateLimit(120);
+
+    // walls
+    const int level[] =
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
     // player
     bool canJump = true;
     const float movementSpeed = 300.f;
@@ -62,9 +80,26 @@ void gameBuild()
         {
             velocity.x += movementSpeed * dt;
         }
+
         player.move(velocity);
-        // drawing
         window.clear();
+        float test = -64.f;
+        // tilemap
+        for (int i = 0; i < 192; ++i)
+        {
+            if (level[i] == 1)
+            {
+                sf::RectangleShape floor;
+                floor.setSize(sf::Vector2f(gridSize, gridSize));
+                floor.setFillColor(sf::Color::Green);
+                floor.setPosition(sf::Vector2f(gridSize + test, 660));
+                window.draw(floor);
+                test += 64.f;
+            }
+        }
+        test = 0.f;
+        // drawing
+
         window.draw(player);
         window.display();
     }
