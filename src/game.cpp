@@ -1,40 +1,25 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
-
+#include "entity.hpp"
+#include "tilemap.hpp"
 void gameBuild()
 {
     float dt;
     sf::Clock clock;
-    std::vector<sf::RectangleShape> walls;
-    const float gridSize = 64.f;
-    const unsigned int WIDTH = 1024;
-    const unsigned int HEIGHT = 640;
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Hu-hunt");
     window.setFramerateLimit(120);
 
-    // tilemap
-    const int TileMap[] =
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+    std::vector<sf::RectangleShape> walls;
 
     // player
-    bool canJump = true;
-    const float movementSpeed = 300.f;
-    const float gravity = 10.f;
-    const float tVelocity = 300.f;
-    const float jumpSpeed = 300.f;
-    sf::Vector2f velocity;
-    sf::RectangleShape player;
-    player.setSize(sf::Vector2f(gridSize, gridSize));
-    player.setFillColor(sf::Color::Red);
+    Player player;
+
+    // enemy
+    enemy enemy;
+    // sf::RectangleShape enemy;
+    enemy.setSize(sf::Vector2f(gridSize, gridSize));
+    enemy.setFillColor(sf::Color::Blue);
+    enemy.setPosition(sf::Vector2f(WIDTH - enemy.getGlobalBounds().width, HEIGHT - enemy.getGlobalBounds().height));
 
     // floor
     sf::RectangleShape floor;
@@ -61,12 +46,10 @@ void gameBuild()
             }
         }
     }
-    // enemy
     while (window.isOpen())
     {
         dt = clock.restart().asSeconds();
         sf::Event event;
-
         // event loop
         while (window.pollEvent(event))
         {
@@ -75,64 +58,42 @@ void gameBuild()
                 window.close();
             }
         }
-        velocity.x = 0.f;
-        // gravity
-        velocity.y += gravity * dt;
-        if (velocity.y > tVelocity * dt)
-            velocity.y = tVelocity * dt;
-
         sf::FloatRect nexPos;
 
-        // player movement
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        {
-            if (canJump == true)
-            {
-                velocity.y = 0.f;
-                velocity.y -= jumpSpeed * dt;
-                canJump = false;
-            }
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        {
-        }
-        // nothing will happen for now
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-            velocity.x += -movementSpeed * dt;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-            velocity.x += movementSpeed * dt;
-        player.move(velocity);
+        player.Update(dt);
+
+        
         // window collision
         // left collision
-        if (player.getPosition().x < 0.f)
-            player.setPosition(0.f, player.getPosition().y);
-        // right collision
-        if (player.getPosition().x > WIDTH - player.getGlobalBounds().width)
-            player.setPosition(WIDTH - player.getGlobalBounds().width, player.getPosition().y);
-        // bottom collision
-        if (player.getPosition().y > HEIGHT - player.getGlobalBounds().height)
-            player.setPosition(player.getPosition().x, HEIGHT - player.getGlobalBounds().height);
-        // top collision
-        if (player.getPosition().y < 0.f)
-            player.setPosition(player.getPosition().x, 0.f);
-        // floor collision
-        for (auto &floor : walls)
-        {
-            sf::FloatRect playerBounds = player.getGlobalBounds();
-            sf::FloatRect floorBounds = floor.getGlobalBounds();
-            nexPos = playerBounds;
-            nexPos.left += velocity.x * dt;
-            nexPos.top += velocity.y * dt;
-            if (floorBounds.intersects(nexPos))
-            {
-                // Bottom collision
-                if (playerBounds.top < floorBounds.top && playerBounds.top + playerBounds.height < floorBounds.top + floorBounds.height && playerBounds.left < floorBounds.left + floorBounds.width && playerBounds.left + playerBounds.width > floorBounds.left)
-                {
-                    canJump = true;
-                    player.setPosition(playerBounds.left, floorBounds.top - playerBounds.height);
-                }
-            }
-        }
+        //if (player.getPosition().x < 0.f)
+        //    player.setPosition(0.f, player.getPosition().y);
+        //// right collision
+        //if (player.getPosition().x > WIDTH - player.getGlobalBounds().width)
+        //    player.setPosition(WIDTH - player.getGlobalBounds().width, player.getPosition().y);
+        //// bottom collision
+        //if (player.getPosition().y > HEIGHT - player.getGlobalBounds().height)
+        //    player.setPosition(player.getPosition().x, HEIGHT - player.getGlobalBounds().height);
+        //// top collision
+        //if (player.getPosition().y < 0.f)
+        //    player.setPosition(player.getPosition().x, 0.f);
+        //// floor collision
+        //for (auto &floor : walls)
+        //{
+        //    sf::FloatRect playerBounds = player.getGlobalBounds();
+        //    sf::FloatRect floorBounds = floor.getGlobalBounds();
+        //    nexPos = playerBounds;
+        //    nexPos.left += player.velocity.x * dt;
+        //    nexPos.top += player.velocity.y * dt;
+        //    if (floorBounds.intersects(nexPos))
+        //    {
+        //        // Bottom collision
+        //        if (playerBounds.top < floorBounds.top && playerBounds.top + playerBounds.height < floorBounds.top + floorBounds.height && playerBounds.left < floorBounds.left + floorBounds.width && playerBounds.left + playerBounds.width > floorBounds.left)
+        //        {
+        //            player.canJump = true;
+        //            player.setPosition(playerBounds.left, floorBounds.top - playerBounds.height);
+        //        }
+        //    }
+        //}
         // drawing
         window.clear();
         for (auto &i : walls)
