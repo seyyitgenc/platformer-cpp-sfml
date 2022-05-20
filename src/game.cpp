@@ -8,21 +8,19 @@ void gameBuild()
     std::vector<sf::RectangleShape> walls;
     const float gridSize = 64.f;
     const unsigned int WIDTH = 1024;
-    const unsigned int HEIGHT = 768;
+    const unsigned int HEIGHT = 640;
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Hu-hunt");
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(120);
 
-    // walls
+    // tilemap
     const int TileMap[] =
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+         0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
@@ -32,7 +30,7 @@ void gameBuild()
     const float movementSpeed = 300.f;
     const float gravity = 10.f;
     const float tVelocity = 300.f;
-    const float jumpSpeed = 200.f;
+    const float jumpSpeed = 300.f;
     sf::Vector2f velocity;
     sf::RectangleShape player;
     player.setSize(sf::Vector2f(gridSize, gridSize));
@@ -41,16 +39,26 @@ void gameBuild()
     // floor
     sf::RectangleShape floor;
     floor.setFillColor(sf::Color::Green);
+    // platforms
+    sf::RectangleShape platform;
+    platform.setFillColor(sf::Color::Magenta);
     // tilemap
-    float gridPos = -64.f;
-    for (int i = 0; i < 192; ++i)
+    for (int i = 0; i < 16; i++)
     {
-        if (TileMap[i] == 1)
+        for (int j = 0; j < 10; j++)
         {
-            floor.setSize(sf::Vector2f(gridSize, gridSize));
-            floor.setPosition(sf::Vector2f(gridSize + gridPos, 600));
-            walls.push_back(floor);
-            gridPos += 64.f;
+            if (TileMap[i + j * 16] == 1)
+            {
+                floor.setSize(sf::Vector2f(gridSize, gridSize));
+                floor.setPosition(sf::Vector2f(i * 64.f, j * 64.f));
+                walls.push_back(floor);
+            }
+            if (TileMap[i + j * 16] == 2)
+            {
+                platform.setSize(sf::Vector2f(gridSize, gridSize));
+                platform.setPosition(sf::Vector2f(i * 64.f, j * 64.f));
+                walls.push_back(platform);
+            }
         }
     }
     // enemy
@@ -85,16 +93,28 @@ void gameBuild()
                 canJump = false;
             }
         }
-        std::cout << dt << std::endl;
-
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-            velocity.y += movementSpeed * dt;
+        {
+        }
+        // nothing will happen for now
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
             velocity.x += -movementSpeed * dt;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
             velocity.x += movementSpeed * dt;
         player.move(velocity);
-
+        // window collision
+        // left collision
+        if (player.getPosition().x < 0.f)
+            player.setPosition(0.f, player.getPosition().y);
+        // right collision
+        if (player.getPosition().x > WIDTH - player.getGlobalBounds().width)
+            player.setPosition(WIDTH - player.getGlobalBounds().width, player.getPosition().y);
+        // bottom collision
+        if (player.getPosition().y > HEIGHT - player.getGlobalBounds().height)
+            player.setPosition(player.getPosition().x, HEIGHT - player.getGlobalBounds().height);
+        // top collision
+        if (player.getPosition().y < 0.f)
+            player.setPosition(player.getPosition().x, 0.f);
         // floor collision
         for (auto &floor : walls)
         {
