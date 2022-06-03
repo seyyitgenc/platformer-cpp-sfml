@@ -19,14 +19,7 @@ struct rect
     sf::Vector2f size;
     sf::Vector2f pos;
     sf::Vector2f vel;
-    std::array<rect *, 4> contact;
 };
-bool RectvsRect(const rect &r1, const rect &r2)
-{
-    return (r1.pos.x < r2.pos.x + r2.size.x && r1.pos.x + r1.size.x > r2.pos.x &&
-            r1.pos.y < r2.pos.y + r2.size.y && r1.pos.y + r1.size.y > r2.pos.y);
-}
-
 bool RayVsRect(const sf::Vector2f &ray_origin, const sf::Vector2f &ray_dir, const rect *target, sf::Vector2f &contact_point, sf::Vector2f &contact_normal, float &t_hit_near)
 {
     contact_normal = {0, 0};
@@ -106,23 +99,6 @@ bool ResolveDynamicRectVsRect(rect *r_dynamic, const float fTimeStep, rect *r_st
     float contact_time = 0.0f;
     if (DynamicRectVsRect(r_dynamic, fTimeStep, *r_static, contact_point, contact_normal, contact_time))
     {
-        if (contact_normal.y > 0)
-            r_dynamic->contact[0] = r_static;
-        else
-            nullptr;
-        if (contact_normal.x < 0)
-            r_dynamic->contact[1] = r_static;
-        else
-            nullptr;
-        if (contact_normal.y < 0)
-            r_dynamic->contact[2] = r_static;
-        else
-            nullptr;
-        if (contact_normal.x > 0)
-            r_dynamic->contact[3] = r_static;
-        else
-            nullptr;
-
         r_dynamic->vel += sf::Vector2f(contact_normal.x * std::abs(r_dynamic->vel.x), contact_normal.y * std::abs(r_dynamic->vel.y)) * (1 - contact_time);
         return true;
     }
